@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func exampleGetUserIDs(ctx context.Context, pool pgxpoolgo.Pool) ([]uint32, error) {
+func poolQueryGetUserIDs(ctx context.Context, pool pgxpoolgo.Pool) ([]uint32, error) {
 	var ids []uint32
 
 	rows, err := pool.Query(ctx, `SELECT id FROM users`)
@@ -29,7 +29,7 @@ func exampleGetUserIDs(ctx context.Context, pool pgxpoolgo.Pool) ([]uint32, erro
 	return ids, nil
 }
 
-func TestExampleGetUsersIDs_OK(t *testing.T) {
+func TestPoolQueryGetUsersIDs_OK(t *testing.T) {
 	ctx := context.Background()
 	mockPool := pgxpoolgo.NewMockPool(t)
 
@@ -39,7 +39,7 @@ func TestExampleGetUsersIDs_OK(t *testing.T) {
 
 	mockPool.On("Query", ctx, `SELECT id FROM users`).Return(mockRows, nil).Once()
 
-	ids, err := exampleGetUserIDs(ctx, mockPool)
+	ids, err := poolQueryGetUserIDs(ctx, mockPool)
 
 	assert.Equal(t, true, mockPool.AssertCalled(t, "Query", ctx, `SELECT id FROM users`))
 	assert.Equal(t, true, mockPool.AssertExpectations(t))
