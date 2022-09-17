@@ -5,6 +5,7 @@ info:
 mock: ## generates mocks
 	@go install github.com/vektra/mockery/v2@latest
 	@mockery --name Pool --filename pool_mock.go --inpackage
+	@mockery --name CommandTag --filename command_tag_mock.go --inpackage
 
 test: ## runs test cases
 	@- go test ./... -v > test.out

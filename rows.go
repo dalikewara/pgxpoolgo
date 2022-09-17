@@ -11,7 +11,7 @@ import (
 )
 
 /*
-	The code below is based on `pgxmock` from `github.com/pashagolub/pgxmock`
+The codes below is based on `pgxmock` from `github.com/pashagolub/pgxmock`
 */
 
 var CSVColumnParser = func(s string) interface{} {
@@ -56,7 +56,7 @@ func (rs *mockRowSets) Values() ([]interface{}, error) {
 func (rs *mockRowSets) Scan(dest ...interface{}) error {
 	r := rs.sets[rs.pos]
 	if len(dest) != len(r.defs) {
-		return fmt.Errorf("Incorrect argument number %d for columns %d", len(dest), len(r.defs))
+		return fmt.Errorf("incorrect argument number %d for columns %d", len(dest), len(r.defs))
 	}
 	for i, col := range r.rows[r.pos-1] {
 		if dest[i] == nil {
@@ -64,7 +64,7 @@ func (rs *mockRowSets) Scan(dest ...interface{}) error {
 		}
 		destVal := reflect.ValueOf(dest[i])
 		if destVal.Kind() != reflect.Ptr {
-			return fmt.Errorf("Destination argument must be a pointer for column %s", r.defs[i].Name)
+			return fmt.Errorf("destination argument must be a pointer for column %s", r.defs[i].Name)
 		}
 		if col == nil {
 			dest[i] = nil
@@ -75,17 +75,17 @@ func (rs *mockRowSets) Scan(dest ...interface{}) error {
 			if destElem := destVal.Elem(); destElem.CanSet() {
 				destElem.Set(val)
 			} else {
-				return fmt.Errorf("Cannot set destination  value for column %s", string(r.defs[i].Name))
+				return fmt.Errorf("cannot set destination  value for column %s", string(r.defs[i].Name))
 			}
 		} else {
 			scanner, ok := destVal.Interface().(interface{ Scan(interface{}) error })
 
 			if !ok {
-				return fmt.Errorf("Destination kind '%v' not supported for value kind '%v' of column '%s'",
+				return fmt.Errorf("destination kind '%v' not supported for value kind '%v' of column '%s'",
 					destVal.Elem().Kind(), val.Kind(), string(r.defs[i].Name))
 			}
 			if err := scanner.Scan(val.Interface()); err != nil {
-				return fmt.Errorf("Scanning value error for column '%s': %w", string(r.defs[i].Name), err)
+				return fmt.Errorf("scanning value error for column '%s': %w", string(r.defs[i].Name), err)
 			}
 
 		}
@@ -96,7 +96,6 @@ func (rs *mockRowSets) Scan(dest ...interface{}) error {
 func (rs *mockRowSets) RawValues() [][]byte {
 	r := rs.sets[rs.pos]
 	dest := make([][]byte, len(r.defs))
-
 	for i, col := range r.rows[r.pos-1] {
 		if b, ok := rawBytes(col); ok {
 			dest[i] = b
@@ -104,7 +103,6 @@ func (rs *mockRowSets) RawValues() [][]byte {
 		}
 		dest[i] = col.([]byte)
 	}
-
 	return dest
 }
 
@@ -112,7 +110,6 @@ func (rs *mockRowSets) String() string {
 	if rs.empty() {
 		return "with empty rows"
 	}
-
 	msg := "should return rows:\n"
 	if len(rs.sets) == 1 {
 		for n, row := range rs.sets[0].rows {
@@ -157,6 +154,7 @@ type MockRows struct {
 	closeErr   error
 }
 
+// NewMockRows generates new mock rows.
 func NewMockRows(columns []string) *MockRows {
 	var coldefs []pgproto3.FieldDescription
 	for _, column := range columns {
@@ -180,9 +178,8 @@ func (r *MockRows) RowError(row int, err error) *MockRows {
 
 func (r *MockRows) AddRow(values ...interface{}) *MockRows {
 	if len(values) != len(r.defs) {
-		panic("Expected number of values to match number of columns")
+		panic("expected number of values to match number of columns")
 	}
-
 	row := make([]interface{}, len(r.defs))
 	copy(row, values)
 	r.rows = append(r.rows, row)
@@ -197,13 +194,11 @@ func (r *MockRows) AddCommandTag(tag pgconn.CommandTag) *MockRows {
 func (r *MockRows) FromCSVString(s string) *MockRows {
 	res := strings.NewReader(strings.TrimSpace(s))
 	csvReader := csv.NewReader(res)
-
 	for {
 		res, err := csvReader.Read()
 		if err != nil || res == nil {
 			break
 		}
-
 		row := make([]interface{}, len(r.defs))
 		for i, v := range res {
 			row[i] = CSVColumnParser(strings.TrimSpace(v))
@@ -217,6 +212,7 @@ type mockRowSetsWithDefinition struct {
 	*mockRowSets
 }
 
+// NewMockRowsWithColumnDefinition generates new mock rows with columns metadata.
 func NewMockRowsWithColumnDefinition(columns ...pgproto3.FieldDescription) *MockRows {
 	return &MockRows{
 		defs:    columns,
