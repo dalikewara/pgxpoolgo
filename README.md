@@ -28,6 +28,7 @@ go get github.com/dalikewara/pgxpoolgo
   - `pgx.Rows`
   - `pgx.Row`
   - `pgconn.CommandTag`
+  - `pgx.Tx`
 
 ### Todo
 
@@ -36,7 +37,6 @@ go get github.com/dalikewara/pgxpoolgo
   - `pgxpool.Config`
   - `pgxpool.Stat`
   - `pgx.BatchResults`
-  - `pgx.Tx`
   - `pgx.CopyFromSource`
   - `pgx.Batch`
   - `pgx.QueryFuncRow`
@@ -57,11 +57,9 @@ func poolQueryGetUserIDs(ctx context.Context, pool pgxpoolgo.Pool) ([]uint32, er
 
 	for rows.Next() {
 		var id uint32
-
 		if err = rows.Scan(&id); err != nil {
 			return ids, err
 		}
-
 		ids = append(ids, id)
 	}
 
@@ -71,18 +69,14 @@ func poolQueryGetUserIDs(ctx context.Context, pool pgxpoolgo.Pool) ([]uint32, er
 func TestPoolQueryGetUsersIDs_OK(t *testing.T) {
 	ctx := context.Background()
 	mockPool := pgxpoolgo.NewMockPool(t)
-
 	assert.Implements(t, (*pgxpoolgo.Pool)(nil), mockPool)
 
 	mockRows := pgxpoolgo.NewMockRows([]string{"id"}).AddRow(uint32(1)).AddRow(uint32(2)).AddRow(uint32(3)).Compose()
-
 	mockPool.On("Query", ctx, `SELECT id FROM users`).Return(mockRows, nil).Once()
 
 	ids, err := poolQueryGetUserIDs(ctx, mockPool)
-
 	assert.Equal(t, true, mockPool.AssertCalled(t, "Query", ctx, `SELECT id FROM users`))
 	assert.Equal(t, true, mockPool.AssertExpectations(t))
-
 	assert.Nil(t, err)
 	assert.Equal(t, []uint32{1, 2, 3}, ids)
 }
@@ -105,18 +99,14 @@ func poolQueryRowGetUserID(ctx context.Context, pool pgxpoolgo.Pool) (uint32, er
 func TestPoolQueryRowGetUsersID_OK(t *testing.T) {
 	ctx := context.Background()
 	mockPool := pgxpoolgo.NewMockPool(t)
-
 	assert.Implements(t, (*pgxpoolgo.Pool)(nil), mockPool)
 
 	mockRow := pgxpoolgo.NewMockRow([]string{"id"}).AddRow(uint32(1)).Compose()
-
 	mockPool.On("QueryRow", ctx, `SELECT id FROM users`).Return(mockRow, nil).Once()
 
 	id, err := poolQueryRowGetUserID(ctx, mockPool)
-
 	assert.Equal(t, true, mockPool.AssertCalled(t, "QueryRow", ctx, `SELECT id FROM users`))
 	assert.Equal(t, true, mockPool.AssertExpectations(t))
-
 	assert.Nil(t, err)
 	assert.Equal(t, uint32(1), id)
 }
@@ -130,7 +120,6 @@ func poolExecInsertUser(ctx context.Context, pool pgxpoolgo.Pool, username, emai
 	if err != nil {
 		return err
 	}
-
 	if commandTag.RowsAffected() < 1 {
 		return errors.New("no user was inserted")
 	}
@@ -143,22 +132,74 @@ func TestPoolExecInsertUser_OK(t *testing.T) {
 	email := "johndoe@email.com"
 	ctx := context.Background()
 	mockPool := pgxpoolgo.NewMockPool(t)
-
 	assert.Implements(t, (*pgxpoolgo.Pool)(nil), mockPool)
 
-	mockCommandTag := pgxpoolgo.NewMockCommandTag(t)
-
-	assert.Implements(t, (*pgxpoolgo.CommandTag)(nil), mockCommandTag)
-
-	mockCommandTag.On("RowsAffected").Return(int64(1))
-
+	mockCommandTag := pgxpoolgo.NewMockCommandTag("INSERT", int64(1))
 	mockPool.On("Exec", ctx, `INSERT INTO users (username, email) VALUES ($1, $2)`, username, email).Return(mockCommandTag, nil).Once()
 
 	err := poolExecInsertUser(ctx, mockPool, username, email)
-
 	assert.Equal(t, true, mockPool.AssertCalled(t, "Exec", ctx, `INSERT INTO users (username, email) VALUES ($1, $2)`, username, email))
 	assert.Equal(t, true, mockPool.AssertExpectations(t))
+	assert.Nil(t, err)
+}
+```
 
+#### Pool.Begin
+
+```go
+func poolBeginInsertUser(ctx context.Context, pool pgxpoolgo.Pool, username, email string) error {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return nil
+	}
+
+	commandTag, err := tx.Exec(ctx, `INSERT INTO users (username, email) VALUES ($1, $2)`, username, email)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() < 1 {
+		return errors.New("no user was inserted")
+	}
+
+	commandTag, err = tx.Exec(ctx, `INSERT INTO profiles (username, email) VALUES ($1, $2)`, username, email)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() < 1 {
+		return errors.New("no profile was inserted")
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil
+	}
+
+	return nil
+}
+
+func TestPoolBeginInsertUser_OK(t *testing.T) {
+	username := "johndoe"
+	email := "johndoe@email.com"
+	ctx := context.Background()
+	mockPool := pgxpoolgo.NewMockPool(t)
+	assert.Implements(t, (*pgxpoolgo.Pool)(nil), mockPool)
+
+	mockTx := pgxpoolgo.NewMockTx(t)
+	mockPool.On("Begin", ctx).Return(mockTx, nil).Once()
+
+	mockCommandTag := pgxpoolgo.NewMockCommandTag("INSERT", int64(1))
+	mockTx.On("Exec", ctx, `INSERT INTO users (username, email) VALUES ($1, $2)`, username, email).Return(mockCommandTag, nil)
+
+	mockCommandTag = pgxpoolgo.NewMockCommandTag("INSERT", int64(1))
+	mockTx.On("Exec", ctx, `INSERT INTO profiles (username, email) VALUES ($1, $2)`, username, email).Return(mockCommandTag, nil)
+
+	mockTx.On("Commit", ctx).Return(nil).Once()
+
+	err := poolBeginInsertUser(ctx, mockPool, username, email)
+	assert.Equal(t, true, mockPool.AssertCalled(t, "Begin", ctx))
+	assert.Equal(t, true, mockPool.AssertExpectations(t))
+	assert.Equal(t, true, mockTx.AssertCalled(t, "Exec", ctx, `INSERT INTO users (username, email) VALUES ($1, $2)`, username, email))
+	assert.Equal(t, true, mockTx.AssertCalled(t, "Exec", ctx, `INSERT INTO profiles (username, email) VALUES ($1, $2)`, username, email))
+	assert.Equal(t, true, mockTx.AssertExpectations(t))
 	assert.Nil(t, err)
 }
 ```

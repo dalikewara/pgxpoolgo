@@ -5,8 +5,10 @@ package pgxpoolgo
 import (
 	context "context"
 
-	pgx "github.com/jackc/pgx/v4"
+	pgconn "github.com/jackc/pgconn"
 	mock "github.com/stretchr/testify/mock"
+
+	pgx "github.com/jackc/pgx/v4"
 
 	pgxpool "github.com/jackc/pgx/v4/pgxpool"
 )
@@ -186,18 +188,18 @@ func (_m *MockPool) CopyFrom(ctx context.Context, tableName pgx.Identifier, colu
 }
 
 // Exec provides a mock function with given fields: ctx, sql, arguments
-func (_m *MockPool) Exec(ctx context.Context, sql string, arguments ...interface{}) (CommandTag, error) {
+func (_m *MockPool) Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error) {
 	var _ca []interface{}
 	_ca = append(_ca, ctx, sql)
 	_ca = append(_ca, arguments...)
 	ret := _m.Called(_ca...)
 
-	var r0 CommandTag
-	if rf, ok := ret.Get(0).(func(context.Context, string, ...interface{}) CommandTag); ok {
+	var r0 pgconn.CommandTag
+	if rf, ok := ret.Get(0).(func(context.Context, string, ...interface{}) pgconn.CommandTag); ok {
 		r0 = rf(ctx, sql, arguments...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(CommandTag)
+			r0 = ret.Get(0).(pgconn.CommandTag)
 		}
 	}
 
@@ -252,15 +254,15 @@ func (_m *MockPool) Query(ctx context.Context, sql string, args ...interface{}) 
 }
 
 // QueryFunc provides a mock function with given fields: ctx, sql, args, scans, f
-func (_m *MockPool) QueryFunc(ctx context.Context, sql string, args []interface{}, scans []interface{}, f func(pgx.QueryFuncRow) error) (CommandTag, error) {
+func (_m *MockPool) QueryFunc(ctx context.Context, sql string, args []interface{}, scans []interface{}, f func(pgx.QueryFuncRow) error) (pgconn.CommandTag, error) {
 	ret := _m.Called(ctx, sql, args, scans, f)
 
-	var r0 CommandTag
-	if rf, ok := ret.Get(0).(func(context.Context, string, []interface{}, []interface{}, func(pgx.QueryFuncRow) error) CommandTag); ok {
+	var r0 pgconn.CommandTag
+	if rf, ok := ret.Get(0).(func(context.Context, string, []interface{}, []interface{}, func(pgx.QueryFuncRow) error) pgconn.CommandTag); ok {
 		r0 = rf(ctx, sql, args, scans, f)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(CommandTag)
+			r0 = ret.Get(0).(pgconn.CommandTag)
 		}
 	}
 

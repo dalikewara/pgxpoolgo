@@ -13,7 +13,6 @@ func poolExecInsertUser(ctx context.Context, pool pgxpoolgo.Pool, username, emai
 	if err != nil {
 		return err
 	}
-
 	if commandTag.RowsAffected() < 1 {
 		return errors.New("no user was inserted")
 	}
@@ -26,21 +25,13 @@ func TestPoolExecInsertUser_OK(t *testing.T) {
 	email := "johndoe@email.com"
 	ctx := context.Background()
 	mockPool := pgxpoolgo.NewMockPool(t)
-
 	assert.Implements(t, (*pgxpoolgo.Pool)(nil), mockPool)
 
-	mockCommandTag := pgxpoolgo.NewMockCommandTag(t)
-
-	assert.Implements(t, (*pgxpoolgo.CommandTag)(nil), mockCommandTag)
-
-	mockCommandTag.On("RowsAffected").Return(int64(1))
-
+	mockCommandTag := pgxpoolgo.NewMockCommandTag("INSERT", int64(1))
 	mockPool.On("Exec", ctx, `INSERT INTO users (username, email) VALUES ($1, $2)`, username, email).Return(mockCommandTag, nil).Once()
 
 	err := poolExecInsertUser(ctx, mockPool, username, email)
-
 	assert.Equal(t, true, mockPool.AssertCalled(t, "Exec", ctx, `INSERT INTO users (username, email) VALUES ($1, $2)`, username, email))
 	assert.Equal(t, true, mockPool.AssertExpectations(t))
-
 	assert.Nil(t, err)
 }
