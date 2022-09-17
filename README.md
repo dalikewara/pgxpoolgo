@@ -24,22 +24,22 @@ go get github.com/dalikewara/pgxpoolgo
 ### Features
 
 - Mock support for these instance:
-  - pgxpool.Pool
-  - pgx.Rows
+  - `pgxpool.Pool`
+  - `pgx.Rows`
 
 ### Todo
 
 - Add mock support for these instance:
-  - pgx.Row
-  - pgconn.CommandTag
-  - pgxpool.Conn
-  - pgxpool.Config
-  - pgxpool.Stat
-  - pgx.BatchResults
-  - pgx.Tx
-  - pgx.CopyFromSource
-  - pgx.Batch
-  - pgx.QueryFuncRow
+  - `pgx.Row`
+  - `pgconn.CommandTag`
+  - `pgxpool.Conn`
+  - `pgxpool.Config`
+  - `pgxpool.Stat`
+  - `pgx.BatchResults`
+  - `pgx.Tx`
+  - `pgx.CopyFromSource`
+  - `pgx.Batch`
+  - `pgx.QueryFuncRow`
 
 ### Usage
 
