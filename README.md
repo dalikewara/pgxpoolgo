@@ -8,7 +8,7 @@
 **pgxpoolgo** is based on **[pgxpool](https://github.com/jackc/pgx)**, but provides `Pool` interface
 and ability to mock the `pgxpool` connection for unit tests.
 
-This package also provides some mock function that based on **[pgxmock](github.com/pashagolub/pgxmock)**
+This package also provides some mock function that based on **[pgxmock](https://github.com/pashagolub/pgxmock)**
 like `NewMockRows`.
 
 ## Getting started
@@ -76,7 +76,7 @@ Read at [CHANGELOG.md](https://github.com/dalikewara/pgxpoolgo/blob/master/CHANG
 
 The original `pgxpool` package belongs to [https://github.com/jackc/pgx](https://github.com/jackc/pgx)
 
-The original `pgxmock` package belongs to [github.com/pashagolub/pgxmock](github.com/pashagolub/pgxmock)
+The original `pgxmock` package belongs to [https://github.com/pashagolub/pgxmock](https://github.com/pashagolub/pgxmock)
 
 ### License
 
