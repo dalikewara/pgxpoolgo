@@ -6,7 +6,7 @@
 ![GitHub license](https://img.shields.io/github/license/dalikewara/pgxpoolgo)
 
 **pgxpoolgo** is based on **[pgxpool](https://github.com/jackc/pgx)**, but provides `Pool` interface
-and ability to mock the `pgxpool` connection for unit tests.
+and ability to mock the `pgxpool` connection for unit testing.
 
 This package also provides some mock function that based on **[pgxmock](https://github.com/pashagolub/pgxmock)**
 like `NewMockRows`.
