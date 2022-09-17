@@ -74,8 +74,6 @@ Read at [CHANGELOG.md](https://github.com/dalikewara/pgxpoolgo/blob/master/CHANG
 
 ### Credits
 
-Copyright &copy; 2022 [Dali Kewara](https://www.dalikewara.com)
-
 The original `pgxpool` package belongs to [https://github.com/jackc/pgx](https://github.com/jackc/pgx)
 
 The original `pgxmock` package belongs to [github.com/pashagolub/pgxmock](github.com/pashagolub/pgxmock)
