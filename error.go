@@ -6,9 +6,9 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-const DBCodeColumnNotExists = "42703"
-const DBCodeDuplicateKey = "23505"
-const DBCodeInvalidInputSyntax = "22P02"
+const ErrDBCodeColumnNotExists = "42703"
+const ErrDBCodeDuplicateKey = "23505"
+const ErrDBCodeInvalidInputSyntax = "22P02"
 
 type ErrDatabase struct {
 	DBErr     error
@@ -50,15 +50,15 @@ func (e *ErrDatabase) IsNoRows() bool {
 }
 
 func (e *ErrDatabase) IsColumnNotExists() bool {
-	return e.DBCode == DBCodeColumnNotExists
+	return e.DBCode == ErrDBCodeColumnNotExists
 }
 
 func (e *ErrDatabase) IsDuplicateKey() bool {
-	return e.DBCode == DBCodeDuplicateKey
+	return e.DBCode == ErrDBCodeDuplicateKey
 }
 
 func (e *ErrDatabase) IsInvalidInputSyntax() bool {
-	return e.DBCode == DBCodeInvalidInputSyntax
+	return e.DBCode == ErrDBCodeInvalidInputSyntax
 }
 
 func (e *ErrDatabase) extract() {
