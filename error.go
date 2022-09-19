@@ -24,11 +24,10 @@ func ErrDB(e error) *ErrDatabase {
 	return err
 }
 
-func NewMockErrDB(code, message string) error {
+func NewMockErrDB(code string) error {
 	err := &ErrDatabase{
-		DBErr:     errors.New(code + "||" + message),
-		DBCode:    code,
-		DBMessage: message,
+		DBErr:  errors.New(code),
+		DBCode: code,
 	}
 	return err
 }
